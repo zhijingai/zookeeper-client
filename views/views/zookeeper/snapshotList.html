@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>zookeeper管理系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+
+
+    <link rel="stylesheet" href="/assets/css/jquery-ui-1.10.3.full.min.css"/>
+    <link rel="stylesheet" href="/assets/css/datepicker.css" />
+    <link rel="stylesheet" href="/assets/css/ui.jqgrid.css" />
+
+    <link rel="stylesheet" href="/assets/css/ace.min.css"/>
+    <link rel="stylesheet" href="/assets/css/ace-rtl.min.css"/>
+    <link rel="stylesheet" href="/assets/css/ace-skins.min.css"/>
+
+    <link rel="stylesheet" href="/js/tools/uploadify/uploadify.css" type="text/css"/>
+
+
+
+    <style type="text/css">
+
+    </style>
+    <script src="/js/jquery-1.11.1.js"></script>
+    <script src="/js/scripts/ajaxDataController.js"></script>
+    <script src="/js/common/zookeeperController.js"></script>
+    <script src="/js/scripts/jquery.tmpl.min.js"></script>
+    <script src="/js/tools/ueditor/ueditor.config.js"></script>
+    <script src="/js/tools/ueditor/ueditor.all.min.js"></script>
+    <script src="/js/tools/uploadify/jquery.uploadify.min.js"></script>
+    <script src="/js/scripts/common.js"></script>
+    <script src="/js/tools/layer/layer.js"></script>
+    <script src="/assets/js/ace-extra.min.js"></script>
+    <script src="/assets/js/jquery-ui-1.10.3.full.min.js"></script>
+    <script src="/assets/js/bootstrap.min.js"></script>
+    <script src="/assets/js/typeahead-bs2.min.js"></script>
+    <script src="/assets/js/fuelux/fuelux.tree.js"></script>
+    <script src="/assets/js/ace-elements.min.js"></script>
+    <script src="/assets/js/ace.min.js"></script>
+    <script src="/assets/js/date-time/bootstrap-datepicker.min.js"></script>
+    <script src="/assets/js/jqGrid/jquery.jqGrid.min.js"></script>
+    <script src="/assets/js/jqGrid/i18n/grid.locale-en.js"></script>
+
+  <script type="text/javascript">
+
+
+        $(function () {
+
+            common.uploadify.upload($("#upload"), "/zooManager/zookeeper/fileUpload?nodePath="
+                    + common.request.getParam("nodePath")+"&clusterName="+  common.request.getParam("clusterName")
+                    , {date: new Date().getTime()},
+                    function (file, data) {
+
+                        if (data.status == 200) {
+
+                            data = data.resultObject;
+                            common.layer.msg(data);
+                            finished();
+                        }else{
+                            common.layer.msg(data.errorMessage);
+                        }
+
+                    });
+
+            var params = {};
+
+            params["nodePath"] = common.request.getParam("nodePath");
+            params["clusterName"] = common.request.getParam("clusterName");
+
+            zookeeperController.getConfigureDetail(params, function (data) {
+
+                if (data.status == 200) {
+                    var data = data.resultObject;
+                    $("#editor2").text(data);
+                } else {
+                    /!* $("#pull-left").show();*!/
+                    $("#editor2").text("您还没有上传文件,请上传！");
+                }
+
+            });
+
+
+            $('#saveBtn').on('click', function () {
+
+                var params = {};
+
+                params["content"] = $("#editor2").val();
+                params["nodePath"] = common.request.getParam("nodePath");
+                params["clusterName"] = common.request.getParam("clusterName");
+
+                zookeeperController.updateConfig(params, function (data) {
+
+
+                    if (data.status == 200) {
+
+                        common.layer.msg("修改成功!");
+
+                        finished();
+                    }
+
+
+                });
+
+            });
+
+
+        });
+
+        function finished() {
+            window.parent.removeSelectClass();
+
+            if (typeof (window.parent.closeLyerBack) === "function") {
+                window.parent.closeLyerBack();
+            } else {
+                var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                parent.layer.close(index); //再执行关闭
+            }
+        }
+    </script>
+
+
+</head>
+
+<body>
+
+<!--<div id="updateConfig" class="widget-box" style="margin:30px ">
+    <div class="widget-header widget-header-small  header-color-green">
+        <div class="widget-toolbar">
+            <a href="#" data-action="collapse">
+                <i class="icon-chevron-up"></i>
+            </a>
+        </div>
+    </div>-->
+
+   <!-- <div class="widget-body">
+       &lt;!&ndash; <div class="widget-main no-padding">
+
+                <textarea class="span12" name="content" data-provide="markdown" id="editor2"
+                          style="width: 100%;height: 100%"
+                          rows="10">**Markdown Editor** inside a *widget box*
+                </textarea>
+
+        </div>&ndash;&gt;
+
+       &lt;!&ndash; <div class="widget-toolbox padding-4 clearfix">
+
+           &lt;!&ndash; <div class="btn-group pull-left" id="pull-left">
+                <input id="upload" name="file" type="file" multiple="true" style="display:none;">
+            </div>&ndash;&gt;
+
+            <div class="btn-group pull-right">
+               &lt;!&ndash; <button class="btn btn-sm btn-danger" id="saveBtn">
+                    <i class="icon-save bigger-125"></i>
+                    Save
+                </button>&ndash;&gt;
+
+                &lt;!&ndash;<button class="btn btn-sm btn-success">
+                    <i class="icon-globe bigger-125"></i>
+
+                    Publish
+                    <i class="icon-arrow-right icon-on-right bigger-125"></i>
+                </button>&ndash;&gt;
+            </div>
+        </div>&ndash;&gt;
+    </div>-->
+
+
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+
+    <div class="main-container-inner">
+        <a class="menu-toggler" id="menu-toggler" href="#">
+            <span class="menu-text"></span>
+        </a>
+
+
+        <div class="main-content">
+
+            <div class="page-content">
+
+                <div class="row">
+
+
+                    <!--<div class="col-sm-6" style="width: 100%;">
+                        <div class="widget-box">
+                            <div class="widget-header header-color-blue2">
+                                <h4 class="lighter smaller" id="type">节点配置</h4>
+                            </div>
+
+                            <div class="widget-body" style="height:200px">
+                                <div class="widget-main padding-8">
+
+
+
+                                    <div class="form-group my-from-style">
+                                        <label class="col-sm-3 control-label no-padding-right my-label-style" for="form-field-1"> 资源路径  </label>
+
+                                        <div class="col-sm-9">
+                                            <input type="text" id="url" class="col-xs-10 col-sm-5 my-form-input-style" />
+                                        </div>
+                                    </div>
+
+                                    &lt;!&ndash;<div class="form-group my-from-style">
+                                        <label class="col-sm-3 control-label no-padding-right my-label-style" for="form-field-1"> 节点序号 </label>
+
+                                        <div class="col-sm-9">
+                                            <input type="text" id="nodeOrder" class="col-xs-10 col-sm-5 my-form-input-style" />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group my-from-style">
+                                        <label class="col-sm-3 control-label no-padding-right my-label-style" for="form-field-1"> 父节点名 </label>
+
+                                        <div class="col-sm-9">
+                                            &lt;!&ndash; 																	<input type="text" id="form-field-1" placeholder="Username" class="col-xs-10 col-sm-5 my-form-input-style" /> &ndash;&gt;
+                                            <select class="form-control my-form-input-style"  id="form-field-select-1" disabled>
+                                                <option value="null"></option>
+                                            </select>
+                                            <script id="selectTmpl" type="text/html">
+                                                <option value="${id}">${name}</option>
+                                            </script>
+                                        </div>
+                                    </div>&ndash;&gt;
+
+                                    <div class="my-btns-style">
+                                        <button class="btn" type="reset" id="addBtn">
+                                            <i class="icon-plus bigger-110"></i>
+                                            新增子节点
+                                        </button>
+
+                                        &nbsp;
+                                        <button class="btn btn-info" type="button" id="removeBtn">
+                                            <i class="icon-remove bigger-110"></i>
+                                            删除
+                                        </button>
+
+                                        &nbsp;
+                                        <button class="btn btn-info" type="button" id="saveBtn">
+                                            <i class="icon-save bigger-110"></i>
+                                            保存
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>-->
+
+
+
+                    <div class="col-xs-12">
+
+                        <table id="grid-table"></table>
+
+                        <div id="grid-pager"></div>
+
+                        <script type="text/javascript">
+                            var $path_base = "/";
+                        </script>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+        <i class="icon-double-angle-up icon-only bigger-110"></i>
+    </a>
+</div><!-- /.main-container -->
+
+<!-- basic scripts -->
+
+
+<!--[if !IE]> -->
+
+<script type="text/javascript">
+    window.jQuery || document.write("<script src='/assets/js/jquery-2.0.3.min.js'>"+"<"+"/script>");
+</script>
+
+<script type="text/javascript">
+    if("ontouchend" in document) document.write("<script src='/assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+</script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/typeahead-bs2.min.js"></script>
+
+<!-- page specific plugin scripts -->
+
+<script src="/assets/js/date-time/bootstrap-datepicker.min.js"></script>
+<script src="/assets/js/jqGrid/jquery.jqGrid.min.js"></script>
+<script src="/assets/js/jqGrid/i18n/grid.locale-en.js"></script>
+
+<!-- ace scripts -->
+
+<script src="/assets/js/ace-elements.min.js"></script>
+<script src="/assets/js/ace.min.js"></script>
+
+<!-- inline scripts related to this page -->
+
+<script type="text/javascript">
+    $(function(){
+
+    });
+    jQuery(function($) {
+        var grid_selector = "#grid-table";
+        var pager_selector = "#grid-pager";
+
+        jQuery(grid_selector).jqGrid({
+            //direction: "rtl",
+            caption: "zookeeper管理",
+            url: "/zooManager/zookeeper/getSnapShotList",
+            mtype: "POST",
+            styleUI: 'Bootstrap',//设置jqgrid的全局样式为bootstrap样式
+            datatype: "json",
+            height: 650,
+            colNames:['集群名称', '节点路径','快照信息','创建时间'],
+            colModel:[
+                {name:'clusterName',index:'clusterName', width:80,editable: true,editoptions:{size:"20",maxlength:"30"}},
+                {name:'path',index:'path', width:80,editable: true,editoptions:{size:"20",maxlength:"30"}},
+                {name:'data',index:'data', width:80,editable: true,editoptions:{size:"20",maxlength:"30"}},
+                {name:'createTime',index:'createTime', width:80,editable: true,formatter: parseDate},
+               /* {name:'commit',index:'commit', width:80,editable: true,editoptions:{size:"20",maxlength:"30"}}*/
+            ],
+
+            viewrecords : true,
+            rowNum:10,
+            rowList:[10,20,30,40,50,60],
+            pager : pager_selector,
+            altRows: true,
+            //toppager: true,
+
+            multiselect: true,
+            //multikey: "ctrlKey",
+            multiboxonly: true,
+
+            loadComplete : function() {
+                var table = this;
+                setTimeout(function(){
+                    styleCheckbox(table);
+
+                    updateActionIcons(table);
+                    updatePagerIcons(table);
+                    enableTooltips(table);
+                }, 0);
+            },
+
+            //保存路径
+            editurl: "/zooManager/zookeeper/getSnapShotManager",//nothing is saved
+
+            autowidth: true
+
+        });
+
+        //enable search/filter toolbar
+        //jQuery(grid_selector).jqGrid('filterToolbar',{defaultSearch:true,stringResult:true})
+
+        //switch element when editing inline
+        function aceSwitch( cellvalue, options, cell ) {
+            setTimeout(function(){
+                $(cell) .find('input[type=checkbox]')
+                        .wrap('<label class="inline" />')
+                        .addClass('ace ace-switch ace-switch-5')
+                        .after('<span class="lbl"></span>');
+            }, 0);
+        }
+        //enable datepicker
+        function pickDate( cellvalue, options, cell ) {
+            setTimeout(function(){
+                $(cell) .find('input[type=text]')
+                        .datepicker({format:'yyyy-mm-dd' , autoclose:true});
+            }, 0);
+        }
+
+        //enable datepicker
+        function parseDate( cellvalue, options, cell ) {
+
+           return  common.date(cell.createTime).format('yyyy-MM-dd HH:mm');
+
+        }
+
+
+        //navButtons
+        jQuery(grid_selector).jqGrid('navGrid',pager_selector,
+                { 	//navbar options
+                    edit: true,
+                    editicon : 'icon-pencil blue',
+                    add: false,
+                    addicon : 'icon-plus-sign purple',
+                    del: true,
+                    delicon : 'icon-trash red',
+                    search: true,
+                    searchicon : 'icon-search orange',
+                    refresh: true,
+                    refreshicon : 'icon-refresh green',
+                    view: true,
+                    viewicon : 'icon-zoom-in grey',
+                },
+                {
+                    //edit record form
+                    //closeAfterEdit: true,
+                    recreateForm: true,
+                    beforeShowForm : function(e) {
+                        var form = $(e[0]);
+                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                        style_edit_form(form);
+                    }
+                },
+                {
+                    //new record form
+                    closeAfterAdd: true,
+                    recreateForm: true,
+                    viewPagerButtons: false,
+                    beforeShowForm : function(e) {
+                        var form = $(e[0]);
+                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                        style_edit_form(form);
+                    }
+                },
+                {
+                    //delete record form
+                    recreateForm: true,
+                    beforeShowForm : function(e) {
+                        var form = $(e[0]);
+                        if(form.data('styled')) return false;
+
+                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                        style_delete_form(form);
+
+                        form.data('styled', true);
+                    },
+                    onClick : function(e) {
+                        alert(1);
+                    }
+                },
+                {
+                    //search form
+                    recreateForm: true,
+                    afterShowSearch: function(e){
+                        var form = $(e[0]);
+                        form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
+                        style_search_form(form);
+                    },
+                    afterRedraw: function(){
+                        style_search_filters($(this));
+                    }
+                    ,
+                    multipleSearch: true,
+                    /**
+                     multipleGroup:true,
+                     showQuery: true
+                     */
+                },
+                {
+                    //view record form
+                    recreateForm: true,
+                    beforeShowForm: function(e){
+                        var form = $(e[0]);
+                        form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
+                    }
+                }
+        )
+
+
+
+        function style_edit_form(form) {
+            form.find('input[name=sdate]').datepicker({format:'yyyy-mm-dd' , autoclose:true})
+                    .end().find('input[name=stock]')
+                    .addClass('ace ace-switch ace-switch-5').wrap('<label class="inline" />').after('<span class="lbl"></span>');
+
+            var buttons = form.next().find('.EditButton .fm-button');
+            buttons.addClass('btn btn-sm').find('[class*="-icon"]').remove();//ui-icon, s-icon
+            buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
+            buttons.eq(1).prepend('<i class="icon-remove"></i>')
+
+            buttons = form.next().find('.navButton a');
+            buttons.find('.ui-icon').remove();
+            buttons.eq(0).append('<i class="icon-chevron-left"></i>');
+            buttons.eq(1).append('<i class="icon-chevron-right"></i>');
+        }
+
+        function style_delete_form(form) {
+            var buttons = form.next().find('.EditButton .fm-button');
+            buttons.addClass('btn btn-sm').find('[class*="-icon"]').remove();//ui-icon, s-icon
+            buttons.eq(0).addClass('btn-danger').prepend('<i class="icon-trash"></i>');
+            buttons.eq(1).prepend('<i class="icon-remove"></i>')
+        }
+
+        function style_search_filters(form) {
+            form.find('.delete-rule').val('X');
+            form.find('.add-rule').addClass('btn btn-xs btn-primary');
+            form.find('.add-group').addClass('btn btn-xs btn-success');
+            form.find('.delete-group').addClass('btn btn-xs btn-danger');
+        }
+        function style_search_form(form) {
+            var dialog = form.closest('.ui-jqdialog');
+            var buttons = dialog.find('.EditTable')
+            buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-sm btn-info').find('.ui-icon').attr('class', 'icon-retweet');
+            buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-sm btn-inverse').find('.ui-icon').attr('class', 'icon-comment-alt');
+            buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-sm btn-purple my-search-search').find('.ui-icon').attr('class', 'icon-search');
+            //定义查询方法
+            $('.my-search-search').on('click',function(){
+                $("#grid-table").jqGrid("setCaption", "Contact List").trigger('reloadGrid');
+
+            });
+        }
+
+        function beforeDeleteCallback(e) {
+            var form = $(e[0]);
+            if(form.data('styled')) return false;
+
+            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+            style_delete_form(form);
+
+            form.data('styled', true);
+        }
+
+        function beforeEditCallback(e) {
+            var form = $(e[0]);
+            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+            style_edit_form(form);
+        }
+
+        function styleCheckbox(table) {
+        }
+
+        function updateActionIcons(table) {
+        }
+
+        function updatePagerIcons(table) {
+            var replacement =
+            {
+                'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
+                'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
+                'ui-icon-seek-next' : 'icon-angle-right bigger-140',
+                'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
+            };
+            $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+                var icon = $(this);
+                var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+
+                if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+            })
+        }
+
+        function enableTooltips(table) {
+            $('.navtable .ui-pg-button').tooltip({container:'body'});
+            $(table).find('.ui-pg-div').tooltip({container:'body'});
+        }
+
+    });
+</script>
+
+
+</div>
+
+</body>
+</html>

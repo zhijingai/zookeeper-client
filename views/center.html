@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>zookeeper管理系统</title>
+   
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="assets/css/font-awesome.min.css" />
+	<link rel="stylesheet" href="assets/css/ace.min.css" />
+	<link rel="stylesheet" href="assets/css/ace-rtl.min.css" />
+	<link rel="stylesheet" href="assets/css/ace-skins.min.css" />
+	<style type="text/css"> 
+		#exhibitor114{ margin:0 auto;width:auto;height:985px;} 
+		#exhibitorleft{ float:left; height:100%;} 
+		#exhibitorright{ float:left;height:100%;margin-left: 2px;} 
+		.my-open-width-style{
+			width:85%;/*显示屏兼任性*/
+		}
+		.my-close-width-style{
+			width:97%;
+		}
+		.ulb:after{
+			display:block;content:"";position:absolute!important;right:0;top:4px;border:8px solid transparent;border-width:14px 10px;border-right-color:#2b7dbc
+		}
+		.tt:after{
+			display:inline-block;content:"";position:absolute;right:-2px;top:-1px;bottom:0;z-index:1;border:2px solid #2b7dbc;border-width:0 2px 0 0
+		}
+	</style> 
+	
+    <script src="/js/jquery-1.11.1.js"></script>
+    <script src="/assets/js/ace-extra.min.js"></script>
+	<script src="/assets/js/bootstrap.min.js"></script>
+	<script src="/assets/js/ace.min.js"></script>
+	<script src="/js/scripts/ajaxDataController.js"></script>
+	<script src="/js/common/rescController.js"></script>
+	<script src="/js/scripts/jquery.tmpl.min.js"></script>
+    <script type="text/javascript">
+    	$(function(){
+    		getRescs();
+    		
+    		$('#reflushBtn').on('click',function(){
+    			var status=$('#sidebar-collapse').attr('data-status');
+    			window.location.reload();
+    			 if(status==1){
+    		        	$('#sidebar-collapse').attr('data-status',1);
+    		        	$('#exhibitorright').removeClass('my-close-width-style').addClass('my-open-width-style');
+    		        	
+    		        }else{
+    		        	$('#sidebar-collapse').attr('data-status',0);
+    		        	$('#exhibitorright').removeClass('my-open-width-style').addClass('my-close-width-style');
+    		        }
+    		});
+		});
+	    function a(e,level){
+	    	if($(e).attr('data-url')!='null'){
+	    		$("#iFrame").attr("src", $(e).attr('data-url'));
+	    	}
+	    	$('.ulb').removeClass('ulb');
+			if(level==1){
+				$('.tt').removeClass('tt');
+				if($(e).attr('data-status')==0){
+					$(e).attr('data-status',1);
+					$('.icon-folder-open').parent().attr('data-status',0);
+					$('.icon-folder-open').removeClass('icon-folder-open').addClass('icon-folder-close');
+					$(e).children().eq(0).removeClass('icon-folder-close').addClass('icon-folder-open');
+				}else{
+					$(e).attr('data-status',0);
+					$('.icon-folder-open').parent().attr('data-status',0);
+					$('.icon-folder-open').removeClass('icon-folder-open').addClass('icon-folder-close');
+				}
+			}
+	    	if(level!=1){
+	    		$(e).addClass('ulb');
+	    	}
+	    	$(e).parent().addClass('tt'); 	
+		}
+	    //渲染菜单(1time)
+		function getRescs(param){
+			rescController.getRescList(param,function(data){
+				rescs=data.resultObject;
+				if(rescs.length>0){
+					for(i=0;i<rescs.length;i++){
+						//一级菜单
+						resc=rescs[i];
+						
+						strValue="";
+						strValue+="<li><a onclick='a(this,\""+resc.level+"\")' data-url=\""+resc.url+"\" class='dropdown-toggle' data-status='0'> <i class='icon-folder-close'></i>" 
+							+"<span class='menu-text'>"+resc.name+"</span>";
+						if(resc.resc.length>0){
+							strValue+="<b class='arrow icon-angle-down'></b>";
+						}
+						strValue+="</a>";
+						if(resc.resc.length>0){
+							strValue+="<ul class='submenu'>";
+							rs=resc.resc;
+							for(j=0;j<rs.length;j++){
+								r=rs[j];
+								if(r.resc.length==0){
+									strValue+="<li><a onclick='a(this,\""+r.level+"\")' data-url=\""+r.url+"\" class='dropdown-toggle'><i class='icon-double-angle-right'></i>"+r.name+"</a></li>";
+								}else{
+									strValue+="<li><a onclick='a(this,\""+r.level+"\")' data-url=\""+r.url+"\" class='dropdown-toggle'><i></i>"
+										+r.name+"<b class='arrow icon-angle-down'></b></a><ul class='submenu'>";
+									threeRs=r.resc;
+									for(k=0;k<threeRs.length;k++){
+										three=threeRs[k];
+										strValue+="<li><a onclick='a(this,\""+three.level+"\")' data-url=\""+three.url+"\"><i></i>"+three.name+"</a></li>";
+									}
+									strValue+="</ul></li>";
+								}
+							}
+							strValue+="</ul>";
+						}
+						strValue+="</li>";
+						$('#sideView').append(strValue);
+						
+					}
+				}
+    		});
+		}
+// 		function getChildRescs(e,id){
+// 			$("ul li").removeClass("active");
+// 			$(e).parent().parent().addClass("active");
+// 			var param={};
+// 			param["parentId"]=id;
+// 			rescController.getRescList(param,function(data){
+//     			$('#b'+id+'').parent().append('<ul class="submenu">');
+//     			for(i=0;i<data.resultObject.length;i++){
+//     				var detail=data.resultObject[i];
+//     				$('#b'+id+'').parent().append("<li><a href=\""+detail.url+"\"><i class='icon-double-angle-right'></i>"+detail.name+"</a></li>");
+//     			}
+//     			$('#b'+id+'').parent().append('</ul>');
+//     		});
+// 		};
+    </script>
+</head>
+<body>
+
+	<div id="exhibitor114" style="float:inherit"> 
+	<div id="exhibitorleft">
+		
+			
+		
+		<div class="sidebar" id="sidebar">
+			<script type="text/javascript">
+				try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
+			</script>
+			<div class="sidebar-shortcuts" id="sidebar-shortcuts">
+						<div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
+							<button class="btn btn-success">
+								<i class="icon-signal"></i>
+							</button>
+
+							<button class="btn btn-info">
+								<i class="icon-pencil"></i>
+							</button>
+
+							<button class="btn btn-warning">
+								<i class="icon-group"></i>
+							</button>
+
+							<button class="btn btn-danger" id="reflushBtn">
+								<i class="icon-refresh"></i>
+							</button>
+						</div>
+
+						<div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
+							<span class="btn btn-success"></span>
+
+							<span class="btn btn-info"></span>
+
+							<span class="btn btn-warning"></span>
+
+							<span class="btn btn-danger"></span>
+						</div>
+					</div><!-- #sidebar-shortcuts -->
+			<ul class="nav nav-list" id="sideView">
+			
+			</ul>
+			<script id="sideTmpl" type="text/html">
+			<li>
+				<a onclick="a(this)" id="${id}" data-url="${url}">
+					<i class="icon-text-width"></i>
+					<span class="menu-text"> ${name} </span>
+
+					{{if childCount > 0 }}
+						<b class="arrow icon-angle-down" id="b${id}"></b>
+					{{/if}}
+				</a>
+			
+				{{if childCount > 0 }}
+					<ul class="submenu">
+						<li>
+						<a href="tables.html">
+							<i class="icon-double-angle-right"></i>
+								${resc}name}
+						</a>
+						</li>
+					</ul>
+				{{/if}}
+			</li>
+    		</script>
+
+			<div class="sidebar-collapse" id="sidebar-collapse" data-status="1">
+				<i class="icon-double-angle-left" data-icon1="icon-double-angle-left" data-icon2="icon-double-angle-right"></i>
+			</div>
+
+			<script type="text/javascript">
+				try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
+			</script>
+		</div>
+	</div> 
+	<div id="exhibitorright" class="my-open-width-style">
+		<div class="breadcrumbs" id="breadcrumbs">
+		<script type="text/javascript">
+			try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+		</script>
+
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home home-icon"></i>
+				<a href="#">Home</a>
+			</li>
+
+			<li>
+				<a href="#">UI Elements</a>
+			</li>
+			<li class="active">Treeview</li>
+		</ul>
+
+		</div>
+        <iframe name="iFrame" id="iFrame" frameborder="no" border="0" marginwidth="0" marginheight="0" allowtransparency="yes" width="100%" height="99.7%"></iframe>
+	</div> 
+	</div> 
+
+</body>
+</html>

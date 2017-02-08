@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>zookeeper管理系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/assets/css/ace.min.css"/>
+    <link rel="stylesheet" href="/assets/css/ace-rtl.min.css"/>
+    <link rel="stylesheet" href="/assets/css/ace-skins.min.css"/>
+    <link rel="stylesheet" href="/assets/css/jquery-ui-1.10.3.full.min.css"/>
+    <link href="/js/tools/uploadify/uploadify.css" rel="stylesheet" type="text/css"/>
+    <style type="text/css">
+        .widget-body{
+            height: 400px;
+        }
+
+    </style>
+    <script src="/js/jquery-1.11.1.js"></script>
+    <script src="/assets/js/ace-extra.min.js"></script>
+    <script src="/js/scripts/ajaxDataController.js"></script>
+    <script src="/js/common/zookeeperController.js"></script>
+    <script src="/js/scripts/jquery.tmpl.min.js"></script>
+    <script src="/assets/js/jquery-ui-1.10.3.full.min.js"></script>
+    <script src="/js/tools/ueditor/ueditor.config.js"></script>
+    <script src="/js/tools/ueditor/ueditor.all.min.js"></script>
+    <script src="/js/tools/uploadify/jquery.uploadify.min.js"></script>
+    <script src="/js/scripts/common.js"></script>
+    <script src="/js/tools/layer/layer.js"></script>
+    <script src="/assets/js/bootstrap.min.js"></script>
+    <script src="/assets/js/typeahead-bs2.min.js"></script>
+    <script src="/assets/js/fuelux/fuelux.tree.js"></script>
+    <script src="/assets/js/ace-elements.min.js"></script>
+    <script src="/assets/js/ace.min.js"></script>
+
+    <script type="text/javascript">
+
+
+        $(function () {
+
+            common.uploadify.upload($("#upload"), "/zooManager/zookeeper/fileUpload?nodePath="
+                    + common.request.getParam("nodePath")+"&clusterName="+  common.request.getParam("clusterName")
+                    , {date: new Date().getTime()},
+                    function (file, data) {
+
+                        if (data.status == 200) {
+
+                            data = data.resultObject;
+                            common.layer.msg(data);
+                            finished();
+                        }else{
+                            common.layer.msg(data.errorMessage);
+                        }
+
+                    });
+
+            var params = {};
+
+            params["nodePath"] = common.request.getParam("nodePath");
+            params["clusterName"] = common.request.getParam("clusterName");
+
+            zookeeperController.getConfigureDetail(params, function (data) {
+
+                if (data.status == 200) {
+                    var data = data.resultObject;
+                    $("#editor2").text(data);
+                } else {
+                    /!* $("#pull-left").show();*!/
+                    $("#editor2").text("您还没有上传文件,请上传！");
+                }
+
+            });
+
+
+            $('#saveBtn').on('click', function () {
+
+                var params = {};
+
+                params["content"] = $("#editor2").val();
+                params["nodePath"] = common.request.getParam("nodePath");
+                params["clusterName"] = common.request.getParam("clusterName");
+
+                zookeeperController.updateConfig(params, function (data) {
+
+
+                    if (data.status == 200) {
+
+                        common.layer.msg("修改成功!");
+
+                        finished();
+                    }
+
+
+                });
+
+            });
+
+
+        });
+
+        function finished() {
+            window.parent.removeSelectClass();
+            window.parent.msg("操作成功");
+            if (typeof (window.parent.closeLyerBack) === "function") {
+                window.parent.closeLyerBack();
+            } else {
+                var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                parent.layer.close(index); //再执行关闭
+            }
+        }
+    </script>
+
+
+</head>
+
+<body>
+
+<div id="updateConfig" class="widget-box" style="margin:30px ">
+    <div class="widget-header widget-header-small  header-color-green">
+        <div class="widget-toolbar">
+            <a href="#" data-action="collapse">
+                <i class="icon-chevron-up"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="widget-body">
+        <div class="widget-main no-padding">
+
+                <textarea class="span12" name="content" data-provide="markdown" id="editor2"
+                          style="width: 100%;height: 350px"
+                          rows="10">**Markdown Editor** inside a *widget box*
+                </textarea>
+
+        </div>
+
+        <div class="widget-toolbox padding-4 clearfix">
+
+            <div class="btn-group pull-left" id="pull-left">
+                <input id="upload" name="file" type="file" multiple="true" style="display:none;">
+            </div>
+
+            <div class="btn-group pull-right">
+                <button class="btn btn-sm btn-danger" id="saveBtn">
+                    <i class="icon-save bigger-125"></i>
+                    Save
+                </button>
+
+                <!--<button class="btn btn-sm btn-success">
+                    <i class="icon-globe bigger-125"></i>
+
+                    Publish
+                    <i class="icon-arrow-right icon-on-right bigger-125"></i>
+                </button>-->
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

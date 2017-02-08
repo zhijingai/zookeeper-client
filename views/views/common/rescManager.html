@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>zookeeper管理系统</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link href="/assets/css/bootstrap.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="/assets/css/font-awesome.min.css" />
+		<link rel="stylesheet" href="/assets/css/ace.min.css" />
+		<link rel="stylesheet" href="/assets/css/ace-rtl.min.css" />
+		<link rel="stylesheet" href="/assets/css/ace-skins.min.css" />
+		<link rel="stylesheet" href="/assets/css/jquery-ui-1.10.3.full.min.css" />
+		<style type="text/css">
+			.back-blue-color{
+				background-color:rgba(98,168,209,0.1);color:#6398b0
+			}
+			#exhibitor114{ margin:0 auto;width:auto;height:985px;} 
+			#exhibitorleft{ float:left; width:50%; height:100%;} 
+			#exhibitorright{ float:right; width:45%;height:400px;margin-left: 2px;}
+			.col-sm-6{ 
+ 			 	width:100%; 
+ 			}
+ 			.my-border-style{
+ 				border: 1px solid #CCC;border-color: #5090c1;
+ 			}     
+ 			.my-from-style{
+ 				margin-left:40px;padding-top:40px;
+ 			}  
+ 			.my-form-input-style{
+ 				width:330px;
+ 			}
+ 			.my-label-style{
+ 				font-size:13px;
+ 			}
+ 			.my-btns-style{
+ 				padding-left: 161.5px;padding-top: 60px;
+ 			}
+ 			.my-hide-style{
+ 				display: none;
+ 			}
+ 			.my-success-style{
+ 				margin: 0;border-width: 0 0 1px 0;
+ 			}
+		</style>
+		<script src="/js/jquery-1.11.1.js"></script>
+		<script src="/assets/js/ace-extra.min.js"></script>
+		<script src="/js/scripts/ajaxDataController.js"></script>
+		<script src="/js/common/rescController.js"></script>
+		<script src="/js/scripts/jquery.tmpl.min.js"></script>
+		<script src="/assets/js/jquery-ui-1.10.3.full.min.js"></script>
+		<script src="/js/common.js"></script>
+		<script src="/js/tools/layer/layer.js"></script>
+		<script type="text/javascript">
+			$(function(){
+				$('#removeBtn').on('click',function(){
+					common.layer.confirm("确认删除",function(){
+						var delParam={};
+						delParam["id"]=$('#currentId').text().trim();
+						delParam["status"]=-1;
+						rescController.deleteResc(delParam,function(data){
+							if(data.status==200){
+								common.layer.alert('删除完成',function(){
+									window.location.reload();
+								});
+							}else{
+								common.layer.alert('请检查网络后重试');
+							}
+						});
+					});
+				});
+				
+				$('#addBtn').on('click',function(){
+					$('#currentId').attr('data-type','0');
+	 	 			$('#type').text('新增子节点');
+	 	 			$('#name').val('');
+	 	 			$('#url').val('');
+	 	 			$('#nodeOrder').val('');
+	 	 			$("#form-field-select-1").find("option[value='"+$('#currentId').text()+"']").attr("selected",true); 
+	 	 			$('#addBtn').attr('disabled',true);
+	 	 			$('#removeBtn').attr('disabled',true);
+				});
+				
+				$('#saveBtn').on('click',function(){
+					var param={};
+					param["name"]=$('#name').val();
+					if(param.name==null||param.name==''||param.name.length>30){
+						common.layer.alert('请输入正确的资源节点名称');
+						return;
+					}
+					param["nodeOrder"]=$('#nodeOrder').val();
+					var type = /^[0-9]*[1-9][0-9]*$/;
+			        var re = new RegExp(type);
+			        if (param.nodeOrder.match(re) == null) {
+			            common.layer.alert('请输入大于零的整数');
+			            return;
+			        }
+			        if($('#currentId').attr('data-type')=='1'){
+			        	//修改
+			        	common.layer.confirm("确认修改",function(){
+							param["id"]=$('#currentId').text().trim();
+				        	param["url"]=$('#url').val().trim();
+							rescController.updateResc(param,function(data){
+								if(data.status==200){
+									common.layer.alert('修改完成',function(){
+										window.location.reload();
+									});
+								}else{
+									common.layer.alert('请检查网络后重试');
+								}
+							});
+						});
+			        }else{
+			        	//新增
+			        	common.layer.confirm("确认新增",function(){
+							param["parentId"]=$('#currentId').text().trim();
+				        	param["url"]=$('#url').val().trim();
+							rescController.addResc(param,function(data){
+								if(data.status==200){
+									common.layer.alert('新增完成',function(){
+										window.location.reload();
+									});
+								}else{
+									common.layer.alert('请检查网络后重试');
+								}
+							});
+						});
+			        }
+				});
+			});
+		</script>
+	</head>
+
+	<body>
+		
+		<div id="currentId" data-type="0" style="display: none"></div>
+		
+		<div class="main-container" id="main-container">
+			<script type="text/javascript">
+				try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+			</script>
+
+			<div class="main-container-inner">
+				<a class="menu-toggler" id="menu-toggler" href="#">
+					<span class="menu-text"></span>
+				</a>
+
+				<div class="main-content">
+
+					<div class="page-content">
+
+						<div class="row">
+							<div class="col-xs-12">
+								<div class="row">
+								
+									<div id="exhibitor114" style="float:inherit"> 
+										<div id="exhibitorleft">
+											<div class="col-sm-6">
+												<div class="widget-box">
+													<div class="widget-header header-color-blue2">
+														<h4 class="lighter smaller">后台资源配置</h4>
+													</div>
+		
+													<div class="widget-body">
+														<div class="widget-main padding-8">
+															<div id="tree1" class="tree"></div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										
+										<div id="exhibitorright" class="my-hide-style">
+											<div class="col-sm-6">
+												<div class="widget-box">
+													<div class="widget-header header-color-blue2">
+														<h4 class="lighter smaller" id="type">节点配置</h4>
+													</div>
+		
+													<div class="widget-body" style="height:400px">
+														<div class="widget-main padding-8">
+															
+															<div class="form-group my-from-style">
+																<label class="col-sm-3 control-label no-padding-right my-label-style" for="form-field-1"> 当前节点 </label>
+		
+																<div class="col-sm-9">
+																	<input type="text" id="name" class="col-xs-10 col-sm-5 my-form-input-style" />
+																</div>
+															</div>
+															
+															<div class="form-group my-from-style">
+																<label class="col-sm-3 control-label no-padding-right my-label-style" for="form-field-1"> 资源路径  </label>
+		
+																<div class="col-sm-9">
+																	<input type="text" id="url" class="col-xs-10 col-sm-5 my-form-input-style" />
+																</div>
+															</div>
+															
+															<div class="form-group my-from-style">
+																<label class="col-sm-3 control-label no-padding-right my-label-style" for="form-field-1"> 节点序号 </label>
+		
+																<div class="col-sm-9">
+																	<input type="text" id="nodeOrder" class="col-xs-10 col-sm-5 my-form-input-style" />
+																</div>
+															</div>
+															
+															<div class="form-group my-from-style">
+																<label class="col-sm-3 control-label no-padding-right my-label-style" for="form-field-1"> 父节点名 </label>
+		
+																<div class="col-sm-9">
+<!-- 																	<input type="text" id="form-field-1" placeholder="Username" class="col-xs-10 col-sm-5 my-form-input-style" /> -->
+																	<select class="form-control my-form-input-style"  id="form-field-select-1" disabled>
+																		<option value="null"></option>
+																	</select>
+																	<script id="selectTmpl" type="text/html">
+																		<option value="${id}">${name}</option>
+																	</script>
+																</div>
+															</div>
+															
+															<div class="my-btns-style">
+																<button class="btn" type="reset" id="addBtn">
+																	<i class="icon-plus bigger-110"></i>
+																	新增子节点
+																</button>
+					
+																&nbsp; 
+																<button class="btn btn-info" type="button" id="removeBtn">
+																	<i class="icon-remove bigger-110"></i>
+																	删除
+																</button>
+																
+																&nbsp;
+																<button class="btn btn-info" type="button" id="saveBtn">
+																	<i class="icon-save bigger-110"></i>
+																	保存
+																</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+										
+								<script type="text/javascript">
+									var $assets = "assets";//this will be used in fuelux.tree-sampledata.js
+								</script>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/javascript">
+			window.jQuery || document.write("<script src='/assets/js/jquery-2.0.3.min.js'>"+"<"+"/script>");
+		</script>
+
+		<script type="text/javascript">
+			if("ontouchend" in document) document.write("<script src='assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+		<script src="/assets/js/bootstrap.min.js"></script>
+		<script src="/assets/js/typeahead-bs2.min.js"></script>
+		<script src="/assets/js/fuelux/fuelux.tree.min.js"></script>
+		<script src="/assets/js/ace-elements.min.js"></script>
+		<script src="/assets/js/ace.min.js"></script>
+		<script type="text/javascript">
+		var rescs=null;
+		var params={};
+		rescController.getAll(params,function(data){
+			rescs=data.resultObject;
+			$("#form-field-select-1").html($("#selectTmpl").tmpl(rescs));
+		});
+		var resc={};
+		$(function(){
+			var DataSourceTree = function(options) {
+				this._data 	= options.data;
+				this._delay = options.delay;
+			}
+
+			DataSourceTree.prototype.data = function(options, callback) {
+				var self = this;
+				var $data = null;
+
+				if(!("name" in options) && !("type" in options)){
+					$data = this._data;
+					callback({ data: $data });
+					return;
+				}
+				else if("type" in options && options.type == "folder") {
+					if("additionalParameters" in options && "children" in options.additionalParameters){
+						$data = options.additionalParameters.children;
+					}
+					else {
+						var params={};
+						params["parentId"]=options.id;
+						rescController.getRescListByParentId(params,function(data){
+							$data = data.resultObject//no data	
+							setTimeout(function(){callback({ data: $data });} , parseInt(Math.random() * 500) + 200);
+						});
+						
+					}
+				}
+				
+				if($data != null){
+					setTimeout(function(){callback({ data: $data });} , parseInt(Math.random() * 500) + 200);
+				}
+					
+			};
+			
+			//初始化一级节点
+			var param={};
+			param["level"]=11;
+			var treeDataSource;
+			rescController.getRescListByParentId(param,function(data){
+
+				resc=data.resultObject;
+				treeDataSource = new DataSourceTree({data: resc});
+				$('#tree1').ace_tree({
+					dataSource: treeDataSource ,
+					multiSelect:true,
+					loadingHTML:'<div class="tree-loading"><i class="icon-refresh icon-spin blue"></i></div>',
+					'open-icon' : 'icon-minus',
+					'close-icon' : 'icon-plus',
+					'selectable' : true,
+					'selected-icon' : 'icon-ok',
+					'unselected-icon' : 'icon-remove'
+				});
+			});
+			
+			
+		});
+		
+
+ 		jQuery(function($){
+// 			$('#tree1').on('loaded', function (evt, data) {
+// 				initRescInfoBox((data.info)[0]);
+// 			});
+			$('#tree1').on('opened', function (evt, data) {
+				initRescInfoBox(data);
+			});
+	
+			$('#tree1').on('closed', function (evt, data) {
+				initRescInfoBox(data);
+			});
+	
+			$('#tree1').on('selected', function (evt, data) {
+				initRescInfoBox((data.info)[0]);
+			});
+		});
+ 		//初始化详情
+ 		function initRescInfoBox(data){
+
+			if($('#exhibitorright').hasClass('my-hide-style')){
+				$('#exhibitorright').removeClass('my-hide-style');
+			}
+			if(data.level==3){
+				$('#addBtn').attr('disabled',true);
+			}else{
+				$('#addBtn').attr('disabled',false);
+			}
+			$('#removeBtn').attr('disabled',false);
+			$('#currentId').text(data.id);
+			$('#currentId').attr('data-type','1');
+			$('#type').text('节点修改');
+			$('#name').val(data.name);
+			$('#url').val(data.url);
+			$('#nodeOrder').val(data.nodeOrder);
+			$("#form-field-select-1").find("option[value='"+data.parentId+"']").attr("selected",true);
+
+
+			/*if(data.level!=0){
+                if($('#exhibitorright').hasClass('my-hide-style')&&data.parentId!=null){
+                     $('#exhibitorright').removeClass('my-hide-style');
+                 }
+                 if(data.level==3){
+                     $('#addBtn').attr('disabled',true);
+                 }else{
+                     $('#addBtn').attr('disabled',false);
+                 }
+                 $('#removeBtn').attr('disabled',false);
+                 $('#currentId').text(data.id);
+                 $('#currentId').attr('data-type','1');
+                 $('#type').text('节点修改');
+                 $('#name').val(data.name);
+                 $('#url').val(data.url);
+                 $('#nodeOrder').val(data.nodeOrder);
+                 $("#form-field-select-1").find("option[value='"+data.parentId+"']").attr("selected",true);
+            }else if(data.level==0&&!($('#exhibitorright').hasClass('my-hide-style'))){
+                $('#exhibitorright').addClass('my-hide-style')
+            }*/
+ 			
+ 		}
+ 		
+ 		
+		</script>
+
+</body>
+</html>

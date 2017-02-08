@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+      <title>zookeeper管理系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <link rel="stylesheet" href="/css/style.css">
+	<script type="text/javascript" src="/js/jquery-1.11.1.js"></script>
+	<script type="text/javascript" src="/js/scripts/common.js"></script>
+	<script type="text/javascript" src="/js/tools/layer/layer.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$("#loginBtn").on('click',function(){
+				if($('#username').val()!=null&&$('#username').val()!=""&&$('#password').val()!=null&&$('#password').val()!=""){
+					$('#login').submit();
+				}else{
+					
+				}
+			});
+		});
+	</script>
+  </head>
+
+<body>
+<div class="cont">
+  <div class="demo">
+    <div class="login">
+      <div class="login__check"><!--<img src="../images/link_3.png">--></div>
+      <div class="login__form">
+        <form id="login" action="/user/login" method="POST" autocomplete="off";>
+        	<div class="login__row">
+          <svg class="login__icon name svg-icon" viewBox="0 0 20 20">
+            <path d="M0,20 a10,8 0 0,1 20,0z M10,0 a4,4 0 0,1 0,8 a4,4 0 0,1 0,-8" />
+          </svg>
+          <input type="text" class="login__input name" placeholder="Username" id="username" name="username" autocomplete="off";/>
+        </div>
+        <div class="login__row">
+          <svg class="login__icon pass svg-icon" viewBox="0 0 20 20">
+            <path d="M0,20 20,20 20,8 0,8z M10,13 10,16z M4,8 a6,8 0 0,1 12,0" />
+          </svg>
+          <input type="password" class="login__input pass" placeholder="Password" id="password" name="password" autocomplete="off";/>
+        </div>
+        </form>
+        <button type="button" class="login__submit" id="loginBtn">登&nbsp;&nbsp;&nbsp;&nbsp;录</button>
+		<p class="login__signup">&copy; zookeeper管理系统</p>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
