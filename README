@@ -1,1 +1,2 @@
-使用nodejs与bootstrap进行开发的zookeeper管理工具，美化zookeeper原始界面，优化节点配置文件在线打开修改
+工具介绍：1.使用nodejs与bootstrap进行开发的zookeeper管理工具，美化zookeeper原始界面，优化节点配置文件在线打开修改，加入了用户权限分配
+         2.基于zookeeper3.4.8，可从官网直接下载并安装，而后向其数据库中加入文件中的权限数据表
